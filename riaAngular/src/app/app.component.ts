@@ -1,53 +1,129 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { HelloComponent } from './hello.component';
-import { InsertComponent } from './insert.component';
-import { ListComponent } from './list.component';
-import { DetailComponent } from './detail.component';
-import { EditComponent } from './edit.component';
+import { TaskFormComponent } from './task-form.component';
+import { TaskListComponent } from './task-list.component';
+import { TaskDetailComponent } from './task-detail.component';
+import { TaskEditComponent } from './task-edit.component';
+import { Item } from './item.model';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { DividerModule } from 'primeng/divider';
+import { PanelModule } from 'primeng/panel';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, HelloComponent, InsertComponent, ListComponent, DetailComponent, EditComponent], 
+  imports: [
+    CommonModule,
+    FormsModule,
+    HelloComponent,
+    TaskFormComponent,
+    TaskListComponent,
+    TaskDetailComponent,
+    TaskEditComponent,
+    CardModule,
+    ButtonModule,
+    DividerModule,
+    PanelModule
+  ], 
   template: `
     <main class="main">
       <div class="content">
-        <div class="left-side">
-          <app-hello helloName="DEV"></app-hello>
+        <p-panel header="Gerenciador de Tarefas">
+          <div class="layout">
+            
+            <p-card header="Adicionar Tarefa">
+              <app-task-form (insertOutEvent)="insert($event)"></app-task-form>
+            </p-card>
 
-          <name-insert (insertOutEvent)="insert($event)"></name-insert>
+            <p-divider></p-divider>
 
-          <name-list (removeOutEvent)="remove($event)" [listNames]="names" (selectNameEvent)="selectName($event)"></name-list>
+            <p-card header="Lista de Tarefas">
+              <app-task-list 
+                [listTasks]="tasks" 
+                [selectedTask]="selectedTask" 
+                (removeOutEvent)="remove($event)" 
+                (selectTaskEvent)="selectTask($event)">
+              </app-task-list>
+            </p-card>
 
-          <name-detail [name]="selectedName"></name-detail>
+            <p-divider></p-divider>
 
-          <name-edit *ngIf="selectedName" [name]="selectedName" (updateName)="updateName($event)"></name-edit>
-        </div>  
+            <p-card *ngIf="selectedTask" header="Detalhes da Tarefa">
+              <app-task-detail [task]="selectedTask"></app-task-detail>
+            </p-card>
+
+            <p-divider></p-divider>
+
+            <p-card *ngIf="selectedTask" header="Editar Tarefa">
+              <app-task-edit 
+                [task]="selectedTask" 
+                (updateTask)="updateTask($event)"
+                (cancelEditEvent)="cancelEdit()">
+              </app-task-edit>
+            </p-card>
+          </div>
+        </p-panel>
       </div>
     </main>
   `,
-  styleUrls: ['./app.component.scss']
+  styles: [`
+    .main {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    .content {
+      width: 80%;
+      max-width: 800px;
+    }
+
+    .layout {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+  `]
 })
 export class AppComponent {
-  names: Array<string> = [];
-  selectedName: string = '';
+  tasks: Item[] = [];
+  selectedTask: Item | null = null; 
 
-  insert(name: string) {
-    this.names.push(name);
+  get selectedTaskOrDefault(): Item | null {
+    return this.selectedTask;
   }
 
-  remove(item: string) {
-    this.names = this.names.filter(internalName => internalName !== item);
+  insert(task: Item) {
+    task.id = this.tasks.length + 1; 
+    this.tasks.push(task);
   }
 
-  selectName(name: string) {
-    this.selectedName = name;
+  remove(id: number) {
+    this.tasks = this.tasks.filter(task => task.id !== id);
+    if (this.selectedTask?.id === id) {
+      this.selectedTask = null;
+    }
   }
 
-  updateName(updatedName: string) {
-    const index = this.names.indexOf(this.selectedName);
-    this.names[index] = updatedName;
-    this.selectedName = updatedName;
+  selectTask(task: Item) {
+    this.selectedTask = { ...task }; 
+  }
+
+  updateTask(updatedTask: Item) {
+    const index = this.tasks.findIndex(task => task.id === updatedTask.id);
+    if (index !== -1) {
+      this.tasks[index] = updatedTask;
+      this.selectedTask = updatedTask;
+    }
+  }
+
+  cancelEdit() {
+    this.selectedTask = null; 
   }
 }
