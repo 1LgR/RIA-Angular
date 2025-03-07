@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HelloComponent } from './hello.component';
 import { TaskFormComponent } from './task-form.component';
 import { TaskListComponent } from './task-list.component';
 import { TaskDetailComponent } from './task-detail.component';
@@ -18,7 +17,6 @@ import { PanelModule } from 'primeng/panel';
   imports: [
     CommonModule,
     FormsModule,
-    HelloComponent,
     TaskFormComponent,
     TaskListComponent,
     TaskDetailComponent,
